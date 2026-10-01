@@ -1,0 +1,14 @@
+%dw 2.0
+
+type auto_f5953432_75d3_4e27_8790_7f65182ff4bd_Output_Payload = {|
+  timeStamp: String, 
+  apiName: String, 
+  apiVersion: String, 
+  runtime?: String, 
+  status: "DEGRADED" | "OK" | "OFFLINE", 
+  dependencies: Array<{|    name: String,     status: "DOWN" | "UP",     dependencies?: Array<Any> {"description": "When this dependency is itself an API exposing `/ready`, its own\ndownstream dependencies are nested here. Absent for leaf deps.\n"}
+  |} {"description": "Health status of a single downstream dependency this API relies on.\nEmitted as an element of `HealthResponse.dependencies[]`.\n\nWhen the dependency is itself an API that exposes `/ready`, its own\ndownstream dependencies are nested under the optional `dependencies`\narray so a single call to the top-level `/ready` returns the full chain.\nLeaf dependencies (SAP, MySQL) omit it.\n",
+  "label": "HealthDependency"}> {"description": "Health of each critical downstream dependency (may nest)."}
+|} {"label": "HealthResponse",
+"description": "Readiness response returned by `GET /ready`. Aggregates the status of every\ncritical downstream dependency into an overall `status` value.\n\nAt v1 this API has a single direct dependency (the Catalog Products Process\nAPI), which in turn has a single dependency (the SAP System API), which in\nturn depends on the MySQL schema simulating SAP. A single call to\n`/ready` here returns the full four-node chain via nested\n`HealthDependency` entries.\n\nStatus mapping:\n  - `OK`       — every dependency in the tree is `UP`.\n  - `DEGRADED` — some dependencies are `DOWN`, others `UP`; the API can\n                 still serve reduced functionality.\n  - `OFFLINE`  — every critical dependency is `DOWN`; the API cannot serve\n                 business requests.\n"}
+

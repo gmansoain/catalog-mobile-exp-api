@@ -1,0 +1,9 @@
+api:
+  name: "catalog-products-mobile-api"
+  version: "1.0.0"
+  runtime: "4.12.0"
+  
+products-process-api:
+  protocol: "HTTPS"
+  host: "products-api-2pl1sm.a671fi.gbr-e1.cloudhub.io"
+  base_path: "/api"

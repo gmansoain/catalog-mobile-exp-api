@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="livenessCheck" doc:id="5c1a8b48-f6a0-412e-9e6d-75c6d8472e8a" >
+		<set-payload value='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;    status: "OK",&#10;    apiName: Mule::p("api.name") default "",&#10;    apiVersion: Mule::p("api.version") default "",&#10;    runtime: Mule::p("api.runtime") default "",&#10;    timeStamp: now()&#10;}]' doc:name="Status OK" doc:id="0edc8fd0-c519-44d9-bda0-234a4ac2c021" />
+	</flow>
+	<flow name="readinessCheck" doc:id="f5953432-75d3-4e27-8790-7f65182ff4bd" >
+		<flow-ref doc:name="checkDependencies" doc:id="db4f4cfd-2447-44e5-9cf5-a43702f7b2a7" name="checkDependencies" />
+		<ee:transform doc:name="Transform Message" doc:id="db701036-b103-4be0-92d9-13277c77cf19" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+fun getDependencyStatus(dependencyResponse) = if(sizeOf(dependencyResponse.status find "UP") == sizeOf(dependencyResponse))
+    "OK"
+else if (sizeOf(dependencyResponse.status find "DOWN") == sizeOf(dependencyResponse))
+    "OFFLINE"
+else
+    "DEGRADED"
+
+output application/json
+---
+{
+    "status": getDependencyStatus(vars.dependencyList),
+    "apiName": p("api.name") default "",
+	"apiVersion": p("api.version") default "",
+	"runtime": p("api.runtime") default "",
+	"timeStamp": now(),
+    "dependencies": vars.dependencyList map (
+        {
+            "name": $.name,
+            "status": $.status,
+            "dependencies": $.dependencies
+        }
+    )
+}
+
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<sub-flow name="checkDependencies" doc:id="40b71637-8e53-4630-9677-53b6573eb8e6">
+		<flow-ref doc:name="checkDependency-products-api" doc:id="2a4792e2-1372-4bd8-b032-2555743ee81d" name="checkDependency-products-api" />
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;[&#10;	vars.dependency_products_api&#10;]]" doc:name="dependencyList" doc:id="4758f0e5-dc98-43e0-a009-f22957ac0030" variableName="dependencyList" />
+	</sub-flow>
+	<sub-flow name="checkDependency-products-api" doc:id="814b1f6b-8192-4d1b-a623-7f0db27dd2f6" >
+		<try doc:name="Try" doc:id="88652aaa-0605-48c4-97db-2fb1c97ab412" >
+			<http:request method="GET" doc:name="Request" doc:id="f9fa7250-ecf0-4342-abea-43ccfb6d83e0" config-ref="Products_Process_API" path="/ready"/>
+			<choice doc:name="Choice" doc:id="6add1a4d-2c27-484d-86a2-2eef8b11d960">
+			<when expression='#[payload.status == "OK"]'>
+				<set-variable value='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  "name": "products-api",&#10;  "status": "UP",&#10;  "dependencies": payload.dependencies&#10;}]' doc:name="dependency_products_api" doc:id="d8da93f9-6187-4b16-a336-13355625553a" variableName="dependency_products_api" />
+			</when>
+			<otherwise>
+				<set-variable value='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  "name": "products-api",&#10;  "status": "DEGRADED",&#10;  "dependencies": payload.dependencies&#10;}]' doc:name="dependency_products_api" doc:id="2db1bf69-a272-41f3-a148-3a847208ac4d" variableName="dependency_products_api" />
+			</otherwise>
+		</choice>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="c2b5a7bc-747a-4f20-80c7-11021684e188" >
+					<set-variable value='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;  "name": "products-api",&#10;  "status": "DOWN",&#10;  "dependencies": [&#10;    {&#10;      "name": "catalog-products-sap-api",&#10;      "status": "UNKNOWN",&#10;      "dependencies": [&#10;      	{&#10;      		"name": "SAP",&#10;      		"status": "UNKNOWN"&#10;      	}&#10;      ]&#10;    }&#10;  ]&#10;}]' doc:name="dependency_products_api" doc:id="658aa312-9b7e-436f-952d-06c3c23249a8" variableName="dependency_products_api" />
+				</on-error-continue>
+			</error-handler>
+		</try>
+	</sub-flow>
+</mule>

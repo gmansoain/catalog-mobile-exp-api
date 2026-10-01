@@ -1,0 +1,11 @@
+%dw 2.0
+
+type auto_5c1a8b48_f6a0_412e_9e6d_75c6d8472e8a_Output_Payload = {|
+  timeStamp: String, 
+  apiName: String, 
+  apiVersion: String, 
+  runtime?: String, 
+  status: "OK"
+|} {"description": "Liveness response returned by `GET /alive`. Signals that the application\nprocess is running. Does not exercise any downstream dependency.\n",
+"label": "HealthAlive"}
+

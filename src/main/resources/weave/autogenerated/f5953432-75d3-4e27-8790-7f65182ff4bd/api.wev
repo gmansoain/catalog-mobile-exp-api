@@ -1,0 +1,9 @@
+%dw 2.0
+
+type auto_f5953432_75d3_4e27_8790_7f65182ff4bd_Output_Variables_dependency_products_api = {|
+  name: String, 
+  status: String, 
+  dependencies: Array<{|    name: String,     status: String,     dependencies: Array<{|      name: String,       status: String    |}>
+  |}>
+|}
+
