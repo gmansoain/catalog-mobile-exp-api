@@ -1,0 +1,10 @@
+%dw 2.0
+
+type auto_ee8f7746_bf3c_4fb1_9dde_d6560c9ee747_Output_Payload = {|
+  price: Number, 
+  name: String, 
+  "type": "cameras" | "televisions" | "games" | "smartphones", 
+  url: String
+|} {"label": "Product",
+"description": "Storefront-shaped product record. Field names deliberately mirror what the\nstatic frontend (`frontend/script.js`) already renders today so the frontend\ncan be flipped from a hard-coded array to a live API call without touching\nits rendering or filtering code.\n\nDerived by transforming the canonical `Product` record returned by the\nCatalog Products Process API:\n\n  - `productName`  →  `name`\n  - `imageUrl`     →  `url`\n  - `categoryCode` →  `type`   (`CAM`→`cameras`, `SMP`→`smartphones`,\n                                 `GMS`→`games`, `TEV`→`televisions`)\n  - `price.amount` →  `price`  (currency dropped — see Environments doc;\n                                 underlying prices are all EUR at v1)\n\nEvery other canonical field (`productId`, `brand`, `description`,\n`weightKg`, `warrantyMonths`, `inStock`, `stockLevel`) is intentionally\nomitted from v1 because the storefront list view does not read them. They\nwill re-appear on the Product Detail Page contract in a later version.\n"}
+

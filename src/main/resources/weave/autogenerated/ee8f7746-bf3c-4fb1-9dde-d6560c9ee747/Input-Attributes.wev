@@ -1,0 +1,26 @@
+%dw 2.0
+
+type auto_ee8f7746_bf3c_4fb1_9dde_d6560c9ee747_Input_Attributes = {|
+  clientCertificate?: {|
+    publicKey?: {|  |}, 
+    "type"?: String, 
+    encoded?: Binary
+  |}, 
+  headers: {| CorrelationIdHeader?: String |}, 
+  listenerPath: String, 
+  method: String, 
+  queryParams: {|  |}, 
+  queryString: String, 
+  relativePath: String, 
+  remoteAddress: String, 
+  requestPath: String, 
+  requestUri: String, 
+  scheme: String, 
+  uriParams: {|
+    environment: "prod" | "dev" | "uat" | "sit", 
+    productId: String
+  |}, 
+  version: String, 
+  localAddress: String
+|}
+

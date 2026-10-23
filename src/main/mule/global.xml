@@ -4,8 +4,15 @@
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<configuration doc:name="App Defaults"
+		doc:id="fbb1dcdf-282c-483f-8aaa-f574e49c9554"
+		defaultErrorHandler-ref="globalErrorHandler" />
 	<configuration-properties doc:name="Configuration properties" doc:id="7942cda2-2871-4ac1-9751-04d83bdac807" file="properties/properties-prod.yaml" />
 	<http:request-config name="Products_Process_API" doc:name="HTTP Request configuration" doc:id="7f4c3061-cd05-4624-9377-a5abd2765955" basePath="${products-process-api.base_path}" >
 		<http:request-connection protocol="${products-process-api.protocol}" host="${products-process-api.host}" />
 	</http:request-config>
+	<import file="build-error-response.xml" />
+	<import file="set-logging-context.xml" />
+	<import file="global-error-handler.xml" />
+	<import file="error-type-registry.xml" />
 </mule>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tracing="http://www.mulesoft.org/schema/mule/tracing" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/tracing http://www.mulesoft.org/schema/mule/tracing/current/mule-tracing.xsd">
+	<flow name="listProducts" doc:id="1fc83c84-3483-45a4-8ce4-3d9dfc8be636" >
+		<tracing:set-logging-variable doc:name="flowName" doc:id="143c9d73-e181-4369-bd01-5c5c9b9c0785" variableName="flowName" value="#[flow.name]" />
+		<logger level="INFO" doc:name="Received GET ALL PRODUCTS request" doc:id="a22cd784-f4b1-4792-8bfe-79cbe2eb121f" message="Received GET ALL PRODUCTS request" />
+		<http:request method="GET" doc:name="GET /products from Products API" doc:id="0aad8855-3521-4b48-8dab-acc9f81d3861" config-ref="Products_Process_API" path="/products"/>
+		<ee:transform doc:name="Transform Message" doc:id="1e50b850-98ea-4bbf-a2fe-9af369a7d4f2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var typeByCategory = {
+    "GMS": "games",
+    "SMP": "smartphones",
+    "TEV": "televisions",
+    "CAM": "cameras"
+}
+---
+payload map ((product) -> {
+    name: product.productName,
+    url: product.imageUrl,
+    ("type"):  typeByCategory[product.categoryCode default ""] default lower(product.categoryLabel default ""),
+    price: product.price.amount
+}
+
+)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Finished GET ALL PRODUCTS request successfully" doc:id="e298300c-786a-4844-afcf-68c90a84c91d" message="Finished GET ALL PRODUCTS request successfully" />
+	</flow>
+	<flow name="getProductByID" doc:id="ee8f7746-bf3c-4fb1-9dde-d6560c9ee747" >
+		<tracing:set-logging-variable doc:name="flowName" doc:id="d3691c0a-1724-4d3a-a544-ae18fd938318" variableName="flowName" value="#[flow.name]" />
+		<logger level="INFO" doc:name="Received GET PRODUCT BY ID  request" doc:id="0fe23cd4-06d1-4b43-9a18-fc8d7109dec9" message="Received GET PRODUCT BY ID  request" />
+		<set-variable value="#[attributes.uriParams.productId]" doc:name="productId" doc:id="e33b2924-68ba-4167-991f-3b73f0cf703e" variableName="productId" />
+		<http:request method="GET" doc:name="GET /product/{productId} from Products API" doc:id="bd94fd3d-a618-4916-a518-efc4a0ad2f37" config-ref="Products_Process_API" path='#["/products/" ++ vars.productId]' />
+		<ee:transform doc:name="Transform Message" doc:id="c2a24316-7d48-4db5-b1cf-47ef4e140dfe">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var typeByCategory = {
+    "GMS": "games",
+    "SMP": "smartphones",
+    "TEV": "televisions",
+    "CAM": "cameras"
+}
+---
+{
+    name: payload.productName,
+    url: payload.imageUrl,
+    ("type"):  typeByCategory[payload.categoryCode default ""] default lower(payload.categoryLabel default ""),
+    price: payload.price.amount
+}
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Finished GET PRODUCT by ID request successfully" doc:id="d529b325-c681-4cd7-8828-3e408b43f31f" message="Finished GET PRODUCT by ID request successfully" />
+	</flow>
+</mule>

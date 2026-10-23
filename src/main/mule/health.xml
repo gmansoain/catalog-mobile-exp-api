@@ -7,6 +7,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<flow name="livenessCheck" doc:id="5c1a8b48-f6a0-412e-9e6d-75c6d8472e8a" >
 		<set-payload value='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;    status: "OK",&#10;    apiName: Mule::p("api.name") default "",&#10;    apiVersion: Mule::p("api.version") default "",&#10;    runtime: Mule::p("api.runtime") default "",&#10;    timeStamp: now()&#10;}]' doc:name="Status OK" doc:id="0edc8fd0-c519-44d9-bda0-234a4ac2c021" />
+		<set-variable value="200" doc:name="Set httpStatus to 200" doc:id="77b25f6a-5b42-430e-ae46-1a8adbdaa10b" variableName="httpStatus" />
 	</flow>
 	<flow name="readinessCheck" doc:id="f5953432-75d3-4e27-8790-7f65182ff4bd" >
 		<flow-ref doc:name="checkDependencies" doc:id="db4f4cfd-2447-44e5-9cf5-a43702f7b2a7" name="checkDependencies" />
